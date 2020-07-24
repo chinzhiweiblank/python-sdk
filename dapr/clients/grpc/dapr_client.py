@@ -126,7 +126,7 @@ class DaprClient:
         :param MetadataTuple metadata: dict to pass custom metadata to target app
         :param str http_verb: http method verb to call HTTP callee application
         :param MetadataTuple http_querystring: dict to represent querystring for HTTP callee application
-    
+
         :returns: the response from callee
         :rtype: InvokeServiceResponse
         """

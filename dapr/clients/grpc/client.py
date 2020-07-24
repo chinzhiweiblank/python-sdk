@@ -57,7 +57,7 @@ class DaprClient:
 
         if settings.DAPR_API_TOKEN:
             api_token_interceptor = DaprClientInterceptor(
-                [("dapr-api-token", settings.DAPR_API_TOKEN),]
+                [("dapr-api-token", settings.DAPR_API_TOKEN), ]
             )
             self._channel = grpc.intercept_channel(self._channel, api_token_interceptor)
 

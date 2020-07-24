@@ -151,10 +151,12 @@ class DaprGrpcClientTests(unittest.TestCase):
                 topic='example',
                 data=111,
             )
+
     def test_save_states(self):
         dapr = DaprClient(f'localhost:{self.server_port}')
         states = [{"key": "key1", "value": "value1"}]
-        dapr.save_states(state_store_name="statestore", states = states)
+        dapr.save_states(state_store_name="statestore", states=states)
+
     @patch.object(settings, 'DAPR_API_TOKEN', 'test-token')
     def test_dapr_api_token_insertion(self):
         dapr = DaprClient(f'localhost:{self.server_port}')
