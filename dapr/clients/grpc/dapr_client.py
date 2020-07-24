@@ -167,7 +167,7 @@ class DaprClient:
             raise ValueError("States cannot be null in saving states")
 
         state_items = [
-            commonv1.StateItem(key=state.key, value=state.value) for state in states
+            common_v1.StateItem(key=state.key, value=state.value) for state in states
         ]
-        req = api_v1.SaveStateRequest(store_name=storeName, states=state_items)
+        req = api_v1.SaveStateRequest(store_name=state_store_name, states=state_items)
         self._stub.SaveState(req)
