@@ -8,7 +8,6 @@ Licensed under the MIT License.
 import grpc
 
 from dapr.conf import settings
-from dapr.clients.base import DEFAULT_JSON_CONTENT_TYPE
 
 from google.protobuf.any_pb2 import Any as GrpcAny
 from google.protobuf.message import Message as GrpcMessage
@@ -55,20 +54,20 @@ class InvokeServiceResponse(DaprResponse):
     ):
         super(InvokeServiceResponse, self).__init__(headers, trailers)
         if not isinstance(data, GrpcMessage):
-            raise ValueError(f"data is not protobuf message.")
+            raise ValueError("data is not protobuf message.")
         self._proto_any = data
         self._content_type = content_type
 
     @property
     def proto(self) -> GrpcAny:
         if not self.is_proto():
-            raise ValueError(f"data is not grpc protobuf message")
+            raise ValueError("data is not grpc protobuf message")
         return self._proto_any
 
     @property
     def data(self) -> bytes:
         if self.is_proto():
-            raise ValueError(f"data is not bytes")
+            raise ValueError("data is not bytes")
         return self._proto_any.value
 
     @property
