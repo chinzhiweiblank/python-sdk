@@ -15,8 +15,15 @@ from dapr.conf import settings
 from dapr.proto import api_v1, api_service_v1, common_v1
 
 from dapr.clients.grpc._helpers import MetadataTuple, DaprClientInterceptor
-from dapr.clients.grpc._request import InvokeServiceRequestData, InvokeBindingRequestData
-from dapr.clients.grpc._response import InvokeServiceResponse, InvokeBindingResponse, DaprResponse
+from dapr.clients.grpc._request import (
+    InvokeServiceRequestData,
+    InvokeBindingRequestData,
+)
+from dapr.clients.grpc._response import (
+    InvokeServiceResponse,
+    InvokeBindingResponse,
+    DaprResponse,
+)
 
 
 class DaprClient:
@@ -49,8 +56,9 @@ class DaprClient:
         self._channel = grpc.insecure_channel(address)
 
         if settings.DAPR_API_TOKEN:
-            api_token_interceptor = DaprClientInterceptor([
-                ('dapr-api-token', settings.DAPR_API_TOKEN), ])
+            api_token_interceptor = DaprClientInterceptor(
+                [("dapr-api-token", settings.DAPR_API_TOKEN),]
+            )
             self._channel = grpc.intercept_channel(self._channel, api_token_interceptor)
 
         self._stub = api_service_v1.DaprStub(self._channel)
@@ -62,15 +70,14 @@ class DaprClient:
     def __del__(self):
         self.close()
 
-    def __enter__(self) -> 'DaprClient':
+    def __enter__(self) -> "DaprClient":
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.close()
 
     def _get_http_extension(
-            self, http_verb: str,
-            http_querystring: Optional[MetadataTuple] = ()
+        self, http_verb: str, http_querystring: Optional[MetadataTuple] = ()
     ) -> common_v1.HTTPExtension:  # type: ignore
         verb = common_v1.HTTPExtension.Verb.Value(http_verb)  # type: ignore
         http_ext = common_v1.HTTPExtension(verb=verb)
@@ -79,14 +86,15 @@ class DaprClient:
         return http_ext
 
     def invoke_service(
-            self,
-            id: str,
-            method: str,
-            data: Union[bytes, str, GrpcMessage],
-            content_type: Optional[str] = None,
-            metadata: Optional[MetadataTuple] = None,
-            http_verb: Optional[str] = None,
-            http_querystring: Optional[MetadataTuple] = None) -> InvokeServiceResponse:
+        self,
+        id: str,
+        method: str,
+        data: Union[bytes, str, GrpcMessage],
+        content_type: Optional[str] = None,
+        metadata: Optional[MetadataTuple] = None,
+        http_verb: Optional[str] = None,
+        http_querystring: Optional[MetadataTuple] = None,
+    ) -> InvokeServiceResponse:
         """Invokes the target service to call method.
 
         This can invoke the specified target service to call method with bytes array data or
@@ -180,21 +188,26 @@ class DaprClient:
                 method=method,
                 data=req_data.data,
                 content_type=req_data.content_type,
-                http_extension=http_ext)
+                http_extension=http_ext,
+            ),
         )
 
         response, call = self._stub.InvokeService.with_call(req, metadata=metadata)
 
         return InvokeServiceResponse(
-            response.data, response.content_type,
-            call.initial_metadata(), call.trailing_metadata())
+            response.data,
+            response.content_type,
+            call.initial_metadata(),
+            call.trailing_metadata(),
+        )
 
     def invoke_binding(
-            self,
-            name: str,
-            operation: str,
-            data: Union[bytes, str],
-            metadata: Optional[MetadataTuple] = ()) -> InvokeBindingResponse:
+        self,
+        name: str,
+        operation: str,
+        data: Union[bytes, str],
+        metadata: Optional[MetadataTuple] = (),
+    ) -> InvokeBindingResponse:
         """Invokes the output bindnig with the specified operation.
         The data field takes any JSON serializable value and acts as the
         payload to be sent to the output binding. The metadata field is an
@@ -228,19 +241,23 @@ class DaprClient:
             name=name,
             data=req_data.data,
             metadata=req_data.metadata,
-            operation=operation
+            operation=operation,
         )
 
         response, call = self._stub.InvokeBinding.with_call(req)
         return InvokeBindingResponse(
-            response.data, dict(response.metadata),
-            call.initial_metadata(), call.trailing_metadata())
+            response.data,
+            dict(response.metadata),
+            call.initial_metadata(),
+            call.trailing_metadata(),
+        )
 
     def publish_event(
-            self,
-            topic: str,
-            data: Union[bytes, str],
-            metadata: Optional[MetadataTuple] = ()) -> DaprResponse:
+        self,
+        topic: str,
+        data: Union[bytes, str],
+        metadata: Optional[MetadataTuple] = (),
+    ) -> DaprResponse:
         """Publish to a given topic.
         This publishes an event with bytes array or str data to a specified topic.
         The str data is encoded into bytes with default charset of utf-8.
@@ -266,19 +283,17 @@ class DaprClient:
             :class:`DaprResponse` gRPC metadata returned from callee
         """
         if not isinstance(data, bytes) and not isinstance(data, str):
-            raise ValueError(f'invalid type for data {type(data)}')
+            raise ValueError(f"invalid type for data {type(data)}")
 
         req_data = data
         if isinstance(data, str):
-            req_data = data.encode('utf-8')
+            req_data = data.encode("utf-8")
 
-        req = api_v1.PublishEventRequest(
-            topic=topic,
-            data=req_data)
+        req = api_v1.PublishEventRequest(topic=topic, data=req_data)
 
         # response is google.protobuf.Empty
         response, call = self._stub.PublishEvent.with_call(req, metadata=metadata)
 
         return DaprResponse(
-            headers=call.initial_metadata(),
-            trailers=call.trailing_metadata())
+            headers=call.initial_metadata(), trailers=call.trailing_metadata()
+        )

@@ -20,11 +20,13 @@ from typing import Dict, List, Optional, Union, Tuple
 MetadataDict = Dict[str, List[Union[bytes, str]]]
 MetadataTuple = Tuple[Tuple[str, Union[bytes, str]], ...]
 
+
 class DaprResponse:
     def __init__(
-            self,
-            headers: Optional[MetadataTuple] = (),
-            trailers: Optional[MetadataTuple] = ()):
+        self,
+        headers: Optional[MetadataTuple] = (),
+        trailers: Optional[MetadataTuple] = (),
+    ):
         self._headers = headers
         self._trailers = trailers
 
@@ -42,29 +44,31 @@ class DaprResponse:
     def as_trailers_dict(self) -> MetadataDict:
         return self._from_tuple(self._trailers)
 
+
 class InvokeServiceResponse(DaprResponse):
     def __init__(
-            self,
-            data: GrpcAny,
-            content_type: Optional[str] = None,
-            headers: Optional[MetadataTuple] = (),
-            trailers: Optional[MetadataTuple] = ()):
+        self,
+        data: GrpcAny,
+        content_type: Optional[str] = None,
+        headers: Optional[MetadataTuple] = (),
+        trailers: Optional[MetadataTuple] = (),
+    ):
         super(InvokeServiceResponse, self).__init__(headers, trailers)
         if not isinstance(data, GrpcMessage):
-            raise ValueError(f'data is not protobuf message.')
+            raise ValueError(f"data is not protobuf message.")
         self._proto_any = data
         self._content_type = content_type
 
     @property
     def proto(self) -> GrpcAny:
         if not self.is_proto():
-            raise ValueError(f'data is not grpc protobuf message')
+            raise ValueError(f"data is not grpc protobuf message")
         return self._proto_any
 
     @property
     def data(self) -> bytes:
         if self.is_proto():
-            raise ValueError(f'data is not bytes')
+            raise ValueError(f"data is not bytes")
         return self._proto_any.value
 
     @property
@@ -72,11 +76,13 @@ class InvokeServiceResponse(DaprResponse):
         return self._content_type
 
     def is_proto(self) -> bool:
-        return self._proto_any.type_url != ''
+        return self._proto_any.type_url != ""
 
     def unpack(self, message: GrpcMessage) -> None:
         if not self._proto_any.Is(message.DESCRIPTOR):
-            raise ValueError(f'invalid type. serialized message type: {self._proto_any.type_url}')
+            raise ValueError(
+                f"invalid type. serialized message type: {self._proto_any.type_url}"
+            )
         self._proto_any.Unpack(message)
 
 
@@ -91,34 +97,28 @@ class DaprClient:
         self._channel.close()
 
     def _get_http_extension(
-            self, http_verb: str,
-            http_querystring: Optional[MetadataTuple] = ()) -> common_v1.HTTPExtension:
+        self, http_verb: str, http_querystring: Optional[MetadataTuple] = ()
+    ) -> common_v1.HTTPExtension:
         verb = common_v1.HTTPExtension.Verb.Value(http_verb)
         http_ext = common_v1.HTTPExtension(verb=verb)
         for key, val in http_querystring:
             http_ext.querystring[key] = val
         return http_ext
 
-    def get_state(
-            self,
-            state_store_name: str,
-            key: str
-    ) -> bytes:
-        req = api_service_v1.GetStateRequest(
-            store_name=state_store_name,
-            key = key 
-        )
+    def get_state(self, state_store_name: str, key: str) -> bytes:
+        req = api_service_v1.GetStateRequest(store_name=state_store_name, key=key)
         response = self._stub.GetState(req)
         return response
 
     def invoke_service(
-            self,
-            target_id: str,
-            method: str,
-            data: InvokeServiceRequestData,
-            metadata: Optional[MetadataTuple] = None,
-            http_verb: Optional[str] = None,
-            http_querystring: Optional[MetadataTuple] = None) -> InvokeServiceResponse:
+        self,
+        target_id: str,
+        method: str,
+        data: InvokeServiceRequestData,
+        metadata: Optional[MetadataTuple] = None,
+        http_verb: Optional[str] = None,
+        http_querystring: Optional[MetadataTuple] = None,
+    ) -> InvokeServiceResponse:
         """Invoke target_id service to call method.
         :param str target_id: str to represent target App ID.
         :param str method: str to represent method name defined in target_id
@@ -140,19 +140,20 @@ class DaprClient:
                 method=method,
                 data=data.proto,
                 content_type=data.content_type,
-                http_extension=http_ext)
+                http_extension=http_ext,
+            ),
         )
 
         response, call = self._stub.InvokeService.with_call(req, metadata=metadata)
 
         return InvokeServiceResponse(
-            response.data, response.content_type,
-            call.initial_metadata(), call.trailing_metadata())
+            response.data,
+            response.content_type,
+            call.initial_metadata(),
+            call.trailing_metadata(),
+        )
 
-    def save_states(
-       self,
-       state_store_name: str,
-       states: List[dict]):
+    def save_states(self, state_store_name: str, states: List[dict]):
         """Save states to the specified state store.
         :param str state_store_name: str to represent the state store to be called.
         :param List[commonv1.StateItem]: stateitems representing the key-value pairs to be saved.
@@ -160,13 +161,13 @@ class DaprClient:
         :returns: the response from callee
         :rtype: InvokeServiceResponse
         """
-        try:
-            if len(state_store_name) == 0 or state_store_name is None:
-                raise ValueError("State store name cannot be null or empty")
-            if len(states) == 0: raise ValueError("States cannot be null in saving states")
-            
-            state_items = [commonv1.StateItem(key=state.key, value=state.value)for state in states]
-            req = api_v1.SaveStateRequest(store_name=storeName, states=states)
-            self._stub.SaveState(req)
-        except Exception e:
-            return e
+        if len(state_store_name) == 0 or state_store_name is None:
+            raise ValueError("State store name cannot be null or empty")
+        if len(states) == 0:
+            raise ValueError("States cannot be null in saving states")
+
+        state_items = [
+            commonv1.StateItem(key=state.key, value=state.value) for state in states
+        ]
+        req = api_v1.SaveStateRequest(store_name=storeName, states=states)
+        self._stub.SaveState(req)

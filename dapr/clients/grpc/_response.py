@@ -25,9 +25,10 @@ class DaprResponse:
     """
 
     def __init__(
-            self,
-            headers: Optional[MetadataTuple] = (),
-            trailers: Optional[MetadataTuple] = ()):
+        self,
+        headers: Optional[MetadataTuple] = (),
+        trailers: Optional[MetadataTuple] = (),
+    ):
         """Inits DapResponse with headers and trailers.
 
         Args:
@@ -67,12 +68,14 @@ class InvokeServiceResponse(DaprResponse):
             protocol buffer message
         content_type (str): the type of `content`
     """
+
     def __init__(
-            self,
-            data: GrpcAny,
-            content_type: Optional[str] = None,
-            headers: Optional[MetadataTuple] = (),
-            trailers: Optional[MetadataTuple] = ()):
+        self,
+        data: GrpcAny,
+        content_type: Optional[str] = None,
+        headers: Optional[MetadataTuple] = (),
+        trailers: Optional[MetadataTuple] = (),
+    ):
         """Initializes InvokeServiceReponse from :obj:`common_v1.InvokeResponse`.
 
         Args:
@@ -87,7 +90,7 @@ class InvokeServiceResponse(DaprResponse):
         """
         super(InvokeServiceResponse, self).__init__(headers, trailers)
         if not isinstance(data, GrpcAny):
-            raise ValueError('data is not protobuf message.')
+            raise ValueError("data is not protobuf message.")
         self._proto_any = data
         self._content_type = content_type
 
@@ -99,7 +102,7 @@ class InvokeServiceResponse(DaprResponse):
             ValueError: data is not protocol buffer message object
         """
         if not self.is_proto():
-            raise ValueError('data is not protocol buffer message object')
+            raise ValueError("data is not protocol buffer message object")
         return self._proto_any
 
     @property
@@ -111,7 +114,7 @@ class InvokeServiceResponse(DaprResponse):
             ValueError: the response data is the serialized protocol buffer message
         """
         if self.is_proto():
-            raise ValueError('data is the serialized protocol buffer message')
+            raise ValueError("data is the serialized protocol buffer message")
         return self._proto_any.value
 
     def text(self) -> str:
@@ -122,8 +125,8 @@ class InvokeServiceResponse(DaprResponse):
             ValueError: the response data is the serialized protocol buffer message
         """
         if self.is_proto():
-            raise ValueError('data is the serialized protocol buffer message')
-        return self.content.decode('utf-8')
+            raise ValueError("data is the serialized protocol buffer message")
+        return self.content.decode("utf-8")
 
     @property
     def content_type(self) -> Optional[str]:
@@ -132,7 +135,7 @@ class InvokeServiceResponse(DaprResponse):
 
     def is_proto(self) -> bool:
         """Returns True if the response data is the serialized protocol buffer message."""
-        return self._proto_any.type_url != ''
+        return self._proto_any.type_url != ""
 
     def unpack(self, message: GrpcMessage) -> None:
         """Unpack the serialized protocol buffer message.
@@ -146,9 +149,11 @@ class InvokeServiceResponse(DaprResponse):
                 matched with the response data type
         """
         if not isinstance(message, GrpcMessage):
-            raise ValueError('output message is not protocol buffer message object')
+            raise ValueError("output message is not protocol buffer message object")
         if not self._proto_any.Is(message.DESCRIPTOR):
-            raise ValueError(f'invalid type. serialized message type: {self._proto_any.type_url}')
+            raise ValueError(
+                f"invalid type. serialized message type: {self._proto_any.type_url}"
+            )
         self._proto_any.Unpack(message)
 
 
@@ -161,12 +166,14 @@ class InvokeBindingResponse(DaprResponse):
         content (bytes): the data in response from the invoke_binding call
         metadata (Dict[str, str]): metadata sent as a reponse by the binding
     """
+
     def __init__(
-            self,
-            data: bytes,
-            metadata: Dict[str, str],
-            headers: Optional[MetadataTuple] = (),
-            trailers: Optional[MetadataTuple] = ()):
+        self,
+        data: bytes,
+        metadata: Dict[str, str],
+        headers: Optional[MetadataTuple] = (),
+        trailers: Optional[MetadataTuple] = (),
+    ):
         """Initializes InvokeBindingReponse from :obj:`runtime_v1.InvokeBindingResponse`.
 
         Args:
@@ -182,13 +189,13 @@ class InvokeBindingResponse(DaprResponse):
         super(InvokeBindingResponse, self).__init__(headers, trailers)
 
         if not isinstance(data, bytes):
-            raise ValueError(f'data type is invalid {type(data)}')
+            raise ValueError(f"data type is invalid {type(data)}")
         self._data = data
         self._metadata = metadata
 
     def text(self) -> str:
         """Gets content as str."""
-        return self._data.decode('utf-8')
+        return self._data.decode("utf-8")
 
     @property
     def content(self) -> bytes:

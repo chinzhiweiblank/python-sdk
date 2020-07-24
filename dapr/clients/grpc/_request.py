@@ -27,10 +27,10 @@ class InvokeServiceRequestData:
         content_type (str, optional): the content type of data which is valid
             only for bytes array data.
     """
+
     def __init__(
-            self,
-            data: Union[bytes, str, GrpcMessage],
-            content_type: Optional[str] = None):
+        self, data: Union[bytes, str, GrpcMessage], content_type: Optional[str] = None
+    ):
         """Inits InvokeServiceRequestData with data and content_type.
 
         Args:
@@ -45,7 +45,7 @@ class InvokeServiceRequestData:
         self._data = GrpcAny()
 
         if isinstance(data, str):
-            data = data.encode('utf-8')
+            data = data.encode("utf-8")
 
         if isinstance(data, bytes):
             self._data.value = data
@@ -56,7 +56,7 @@ class InvokeServiceRequestData:
             self._data.Pack(data)
             self._content_type = None
         else:
-            raise ValueError(f'invalid data type {type(data)}')
+            raise ValueError(f"invalid data type {type(data)}")
 
     @property
     def data(self) -> GrpcAny:
@@ -77,10 +77,8 @@ class InvokeBindingRequestData:
         data (bytes, str): the data which is used for invoke_binding request.
         metadata (Dict[str, str]): the metadata sent to the binding.
     """
-    def __init__(
-            self,
-            data: Union[bytes, str],
-            metadata: Optional[MetadataTuple] = ()):
+
+    def __init__(self, data: Union[bytes, str], metadata: Optional[MetadataTuple] = ()):
         """Inits InvokeBindingRequestData with data and metadata if given.
 
         Args:
@@ -92,17 +90,17 @@ class InvokeBindingRequestData:
             ValueError: metadata values are not str.
         """
         self._metadata = dict()
-        for item in metadata:   # type: ignore
+        for item in metadata:  # type: ignore
             if not isinstance(item[1], str):
-                raise ValueError(f'invalid metadata value type {type(item[1])}')
+                raise ValueError(f"invalid metadata value type {type(item[1])}")
             self._metadata[str(item[0])] = str(item[1])
-        self._data = b''
+        self._data = b""
         if isinstance(data, str):
-            self._data = data.encode('utf-8')
+            self._data = data.encode("utf-8")
         elif isinstance(data, bytes):
             self._data = data
         else:
-            raise ValueError(f'invalid data type {type(data)}')
+            raise ValueError(f"invalid data type {type(data)}")
 
     @property
     def data(self) -> bytes:

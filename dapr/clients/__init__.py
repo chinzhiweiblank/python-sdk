@@ -11,9 +11,9 @@ from dapr.clients.grpc.client import DaprClient
 from dapr.clients.http.dapr_actor_http_client import DaprActorHttpClient
 
 __all__ = [
-    'DaprClient',
-    'DaprActorClientBase',
-    'DaprActorHttpClient',
-    'DaprInternalError',
-    'ERROR_CODE_UNKNOWN',
+    "DaprClient",
+    "DaprActorClientBase",
+    "DaprActorHttpClient",
+    "DaprInternalError",
+    "ERROR_CODE_UNKNOWN",
 ]
