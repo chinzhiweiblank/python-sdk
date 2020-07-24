@@ -125,7 +125,8 @@ class DaprClient:
         :param InvokeServiceRequestData data: bytes or Message for data which will send to target_id
         :param MetadataTuple metadata: dict to pass custom metadata to target app
         :param str http_verb: http method verb to call HTTP callee application
-        :param MetadataTuple http_querystring: dict to represent querystring for HTTP callee application
+        :param MetadataTuple http_querystring: dict to represent querystring for
+         HTTP callee application
 
         :returns: the response from callee
         :rtype: InvokeServiceResponse
@@ -169,5 +170,5 @@ class DaprClient:
         state_items = [
             commonv1.StateItem(key=state.key, value=state.value) for state in states
         ]
-        req = api_v1.SaveStateRequest(store_name=storeName, states=states)
+        req = api_v1.SaveStateRequest(store_name=storeName, states=state_items)
         self._stub.SaveState(req)
